@@ -186,6 +186,14 @@ struct EdifBackend : public Backend {
 		for (auto module_it : design->modules_)
 		{
 			RTLIL::Module *module = module_it.second;
+			lib_cell_ports[module->name];
+
+			for (auto port : module->ports)
+			{
+				Wire *wire = module->wire(port);
+				lib_cell_ports[module->name][port] = std::max(lib_cell_ports[module->name][port], GetSize(wire));
+			}
+
 			if (module->get_blackbox_attribute())
 				continue;
 
@@ -203,7 +211,7 @@ struct EdifBackend : public Backend {
 				if (!design->modules_.count(cell->type) || design->modules_.at(cell->type)->get_blackbox_attribute()) {
 					lib_cell_ports[cell->type];
 					for (auto p : cell->connections())
-						lib_cell_ports[cell->type][p.first] = GetSize(p.second);
+						lib_cell_ports[cell->type][p.first] = std::max(lib_cell_ports[cell->type][p.first], GetSize(p.second));
 				}
 			}
 		}
